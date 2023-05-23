@@ -5,7 +5,7 @@ app:
 database:
   host: "localhost"
   port: 5432
-  user: "postgres"
+  username: "postgres"
   password: "gobank"
   dbname: "inventory_management_system"
   sslmode: "disable"
