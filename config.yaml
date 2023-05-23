@@ -1,0 +1,13 @@
+app:
+  name: "Inventory Management System"
+  dbtype: "postgresql"
+  port: 8080
+database:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "gobank"
+  dbname: "inventory_management_system"
+  sslmode: "disable"
+  max_idle_conns: 10
+  max_open_conns: 100

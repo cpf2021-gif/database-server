@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"server/global"
+	"server/setup"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+	// 配置文件
+	global.GL_VIPER = setup.InitializeViper("./")
 }
