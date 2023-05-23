@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 type Database struct {
 	Host     string `mapstructure:"host" json:"host" yaml:"host"`
 	Port     int    `mapstructure:"port" json:"port" yaml:"port"`
@@ -9,4 +11,9 @@ type Database struct {
 	SSLMode  string `mapstructure:"sslmode" json:"sslmode" yaml:"sslmode"`
 	Max_idle_conns int `mapstructure:"max_idle_conns" json:"max_idle_conns" yaml:"max_idle_conns"`
 	Max_open_conns int `mapstructure:"max_open_conns" json:"max_open_conns" yaml:"max_open_conns"`
+}
+
+func (db *Database) GetDSN() string {
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		db.Host, db.Port, db.Username, db.Password, db.Dbname, db.SSLMode)
 }
