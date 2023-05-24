@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	GL_VIPER *viper.Viper
+	GL_VIPER  *viper.Viper
 	GL_CONFIG config.Configuration
-	GL_DB *gorm.DB
+	GL_DB     *gorm.DB
 )

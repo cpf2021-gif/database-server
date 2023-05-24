@@ -8,5 +8,5 @@ import (
 
 func TestInitializeDB(t *testing.T) {
 	setup.InitializeViper(".././")
-	setup.InitializeDB()	
+	setup.InitializeDB()
 }

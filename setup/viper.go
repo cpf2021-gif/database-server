@@ -7,7 +7,7 @@ import (
 	"server/global"
 )
 
-func InitializeViper(path string)  *viper.Viper{
+func InitializeViper(path string) *viper.Viper {
 	vip := viper.New()
 	vip.SetConfigName("config")
 	vip.SetConfigType("yaml")
