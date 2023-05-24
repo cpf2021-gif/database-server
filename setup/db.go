@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"server/global"
+	"server/model/user"
 )
 
 func InitializeDB() *gorm.DB {
@@ -16,6 +17,9 @@ func InitializeDB() *gorm.DB {
 	}
 
 	fmt.Println("database initialized")
+
+	// Migrate the schema
+	db.AutoMigrate(&user.User{})
 
 	return db
 }
