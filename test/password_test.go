@@ -3,7 +3,6 @@ package test
 import (
 	"server/util"
 	"testing"
-
 )
 
 func TestPassword(t *testing.T) {
@@ -15,5 +14,5 @@ func TestPassword(t *testing.T) {
 	isValid := util.CheckPasswordHash(password, hashPassword)
 	if !isValid {
 		t.Error("Password is not valid")
-	}	
+	}
 }
