@@ -6,13 +6,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HashAndSalt(pwd string) string {
+func HashAndSalt(pwd string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
-	if err != nil {
-		log.Println(err)
-	}
 
-	return string(hash)
+	return string(hash), err
 }
 
 func CheckPasswordHash(pwd, hash string) bool {
