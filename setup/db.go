@@ -7,9 +7,13 @@ import (
 	"gorm.io/gorm"
 
 	"server/global"
+	"server/model/inventory"
+	"server/model/product"
+	"server/model/supplier"
 	"server/model/user"
 )
 
+// 初始化数据库
 func InitializeDB() *gorm.DB {
 	db, err := gorm.Open(postgres.Open(global.GL_CONFIG.Database.GetDSN()), &gorm.Config{})
 	if err != nil {
@@ -19,7 +23,7 @@ func InitializeDB() *gorm.DB {
 	fmt.Println("database initialized")
 
 	// Migrate the schema
-	db.AutoMigrate(&user.User{})
+	db.AutoMigrate(&user.User{}, &product.Product{}, &product.ProductSupplier{}, &inventory.Inventory{}, &inventory.Inbound{}, &inventory.Outbound{}, &supplier.Supplier{})
 
 	return db
 }
