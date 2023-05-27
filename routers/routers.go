@@ -2,6 +2,8 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
+
+	"server/app/user"
 )
 
 func InitRouter() *gin.Engine {
@@ -10,6 +12,8 @@ func InitRouter() *gin.Engine {
 	// 中间件
 
 	// 路由
+	// 注册用户路由
+	user.Routers(r)
 
 	return r
 }
