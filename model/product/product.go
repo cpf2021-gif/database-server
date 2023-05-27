@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"server/model/supplier"
 )
 
 // 产品表
@@ -20,13 +19,20 @@ func (p *Product) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
+// 供应商表
+type Supplier struct {
+	ID    int    `json:"id" gorm:"primary_key"`
+	Name  string `json:"name" gorm:"type:varchar(20);not null"`
+	Phone string `json:"phone" gorm:"type:varchar(20);not null"`
+}
+
 // 产品和供应商表的中间表
 type ProductSupplier struct {
-	ID         int               `json:"id" gorm:"primary_key"`
-	ProductID  int               `json:"product_id" gorm:"type:int;not null"`
-	Product    Product           `json:"product" gorm:"foreignkey:ProductID"`
-	SupplierID int               `json:"supplier_id" gorm:"type:int;not null"`
-	Supplier   supplier.Supplier `json:"supplier" gorm:"foreignkey:SupplierID"`
+	ID         int      `json:"id" gorm:"primary_key"`
+	ProductID  int      `json:"product_id" gorm:"type:int;not null"`
+	Product    Product  `json:"product" gorm:"foreignkey:ProductID"`
+	SupplierID int      `json:"supplier_id" gorm:"type:int;not null"`
+	Supplier   Supplier `json:"supplier" gorm:"foreignkey:SupplierID"`
 
 	CreateTime time.Time `json:"create_time" gorm:"index"`
 }

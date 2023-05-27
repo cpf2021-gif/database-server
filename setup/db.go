@@ -9,7 +9,6 @@ import (
 	"server/global"
 	"server/model/inventory"
 	"server/model/product"
-	"server/model/supplier"
 	"server/model/user"
 )
 
@@ -23,7 +22,7 @@ func InitializeDB() *gorm.DB {
 	fmt.Println("database initialized")
 
 	// Migrate the schema
-	db.AutoMigrate(&user.User{}, &product.Product{}, &product.ProductSupplier{}, &inventory.Inventory{}, &inventory.Inbound{}, &inventory.Outbound{}, &supplier.Supplier{})
+	db.AutoMigrate(&user.User{}, &product.Product{}, &product.Supplier{}, &product.ProductSupplier{}, &inventory.Inventory{}, &inventory.Inbound{}, &inventory.Outbound{})
 
 	return db
 }

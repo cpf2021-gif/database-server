@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 
 	"server/model/product"
-	"server/model/supplier"
 	"server/model/user"
 )
 
@@ -43,8 +42,8 @@ type Inbound struct {
 	ProductID int             `json:"product_id" gorm:"type:int;not null"`
 	Product   product.Product `json:"product" gorm:"foreignkey:ProductID"`
 
-	SupplierID int               `json:"supplier_id" gorm:"type:int;not null"`
-	Supplier   supplier.Supplier `json:"supplier" gorm:"foreignkey:SupplierID"`
+	SupplierID int              `json:"supplier_id" gorm:"type:int;not null"`
+	Supplier   product.Supplier `json:"supplier" gorm:"foreignkey:SupplierID"`
 
 	Quantity int `json:"quantity" gorm:"type:int;not null"`
 
