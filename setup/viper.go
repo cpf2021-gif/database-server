@@ -22,6 +22,5 @@ func InitializeViper(path string) *viper.Viper {
 	}
 
 	fmt.Println("viper initialized")
-
 	return vip
 }
