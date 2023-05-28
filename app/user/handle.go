@@ -22,31 +22,14 @@ type LoginRequest struct {
 }
 
 type GetUserResponse struct {
-	ID       int    `json:"id"`
 	Username string `json:"username"`
 	Role     string `json:"role"`
+	CreateTime  string `json:"create_time"`
+	UpdateTime  string `json:"update_time"`
 }
 
 type UpdateRoleRequest struct {
 	Role string `json:"role" binding:"required"`
-}
-
-func GetUserByID(c *gin.Context) {
-	id := c.Param("id")
-
-	var u user.User
-	if err := global.GL_DB.Model(&user.User{}).Where("id = ?", id).First(&u).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
-		return
-	}
-
-	resp := GetUserResponse{
-		ID:       u.ID,
-		Username: u.Username,
-		Role:     u.Role,
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": resp})
 }
 
 func GetUsers(c *gin.Context) {
@@ -60,9 +43,10 @@ func GetUsers(c *gin.Context) {
 	var resp []GetUserResponse
 	for _, u := range users {
 		resp = append(resp, GetUserResponse{
-			ID:       u.ID,
 			Username: u.Username,
 			Role:     u.Role,
+			CreateTime: u.CreateTime.Format("2006-01-02 15:04:05"),
+			UpdateTime: u.UpdateTime.Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -118,28 +102,11 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "login successful"})
 }
 
-func DeleteUserByID(c *gin.Context) {
-	id := c.Param("id")
+func UpdateRoleByName(c *gin.Context) {
+	name := c.Param("name")
 
 	var u user.User
-	if err := global.GL_DB.Model(&user.User{}).Where("id = ?", id).First(&u).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
-		return
-	}
-
-	if global.GL_DB.Model(&user.User{}).Delete(&u).Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete user"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "user deleted"})
-}
-
-func UpdateRoleByID(c *gin.Context) {
-	id := c.Param("id")
-
-	var u user.User
-	if err := global.GL_DB.Model(&user.User{}).Where("id = ?", id).First(&u).Error; err != nil {
+	if err := global.GL_DB.Model(&user.User{}).Where("username = ?", name).First(&u).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
 	}
