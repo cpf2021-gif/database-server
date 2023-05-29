@@ -69,8 +69,8 @@ func GetProducts(c *gin.Context) {
 			ID:           p.ID,
 			Name:         p.Name,
 			SupplierName: p.SupplierName,
-			CreateTime:  p.CreateTime.Format("2006-01-02 15:04:05"),
-			UpdateTime:  p.UpdateTime.Format("2006-01-02 15:04:05"),
+			CreateTime:  p.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			UpdateTime:  p.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 

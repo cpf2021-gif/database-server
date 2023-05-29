@@ -45,8 +45,8 @@ func GetUsers(c *gin.Context) {
 		resp = append(resp, GetUserResponse{
 			Username: u.Username,
 			Role:     u.Role,
-			CreateTime: u.CreateTime.Format("2006-01-02 15:04:05"),
-			UpdateTime: u.UpdateTime.Format("2006-01-02 15:04:05"),
+			CreateTime: u.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			UpdateTime: u.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -99,7 +99,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "login successful"})
+	c.JSON(http.StatusOK, gin.H{"message": "login success", "role": u.Role})
 }
 
 func UpdateRoleByName(c *gin.Context) {

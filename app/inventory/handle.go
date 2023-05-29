@@ -36,8 +36,8 @@ func GetInventories(c *gin.Context) {
 			Quantity:    ivt.Quantity,
 			MaxQuantity: ivt.MaxQuantity,
 			MinQuantity: ivt.MinQuantity,
-			CreateTime: ivt.CreateTime.Format("2006-01-02 15:04:05"),
-			UpdateTime: ivt.UpdateTime.Format("2006-01-02 15:04:05"),
+			CreateTime: ivt.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			UpdateTime: ivt.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -68,7 +68,7 @@ func GetInBounds(c *gin.Context) {
 			ProductName: inb.ProductName,
 			Quantity:    inb.Quantity,
 			UserName:    inb.UserName,
-			CreateTime: inb.CreateTime.Format("2006-01-02 15:04:05"),
+			CreateTime: inb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -99,7 +99,7 @@ func GetOutBounds(c *gin.Context) {
 			ProductName: outb.ProductName,
 			Quantity:    outb.Quantity,
 			UserName:    outb.UserName,
-			CreateTime: outb.CreateTime.Format("2006-01-02 15:04:05"),
+			CreateTime: outb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
