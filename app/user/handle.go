@@ -119,7 +119,7 @@ func UpdateRoleByName(c *gin.Context) {
 
 	u.Role = request.Role
 
-	if global.GL_DB.Model(&user.User{}).Save(&u).Error != nil {
+	if global.GL_DB.Model(&u).Updates(request).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
 		return
 	}

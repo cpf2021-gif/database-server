@@ -96,14 +96,18 @@ func UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	p.SupplierName = request.SupplierName
+	if p.SupplierName == request.SupplierName {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "supplier name is the same"})
+	}
 	/*
 		UPDATE products SET supplier_name = ?, update_time = ? WHERE id = ?
 	*/
-	if err := global.GL_DB.Model(&product.Product{}).Save(&p).Error; err != nil {
+	if err := global.GL_DB.Model(&p).Updates(request).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update product"})
 		return
 	}
+
+	c.JSON(http.StatusOK, gin.H{"data": p})
 }
 
 type CreateSupplierRequest struct {
