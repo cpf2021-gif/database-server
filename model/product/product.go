@@ -16,7 +16,6 @@ Create table products
 	supplier_phone varchar(20) not null,
 	create_time timestamp with time zone not null,
 	foreign key (supplier_name) references suppliers(name) on update cascade on delete restrict,
-	INDEX idx_product_create_time (create_time)
 );
 */
 type Product struct {

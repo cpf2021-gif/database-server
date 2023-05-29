@@ -77,6 +77,21 @@ func GetProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": response})
 }
 
+// 获取所有的供应商
+func GetSuppliers(c *gin.Context) {
+	var suppliers []product.Supplier
+
+	/*
+		SELECT * FROM suppliers
+	*/
+	if err := global.GL_DB.Model(&product.Supplier{}).Find(&suppliers).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get suppliers"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": suppliers})
+}
+
 // 修改商品供应商
 func UpdateProduct(c *gin.Context) {
 	id := c.Param("id")
