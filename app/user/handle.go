@@ -117,9 +117,15 @@ func UpdateRoleByName(c *gin.Context) {
 		return
 	}
 
+	if u.Role == request.Role {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role not changed"})
+		return
+	}
+
 	u.Role = request.Role
 
-	if global.GL_DB.Model(&u).Updates(request).Error != nil {
+	// 使用Save方法，才会调用gorm的hooks
+	if global.GL_DB.Save(&u).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
 		return
 	}
