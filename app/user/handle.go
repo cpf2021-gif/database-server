@@ -22,10 +22,10 @@ type LoginRequest struct {
 }
 
 type GetUserResponse struct {
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	CreateTime  string `json:"create_time"`
-	UpdateTime  string `json:"update_time"`
+	Username   string `json:"username"`
+	Role       string `json:"role"`
+	CreateTime string `json:"create_time"`
+	UpdateTime string `json:"update_time"`
 }
 
 type UpdateRoleRequest struct {
@@ -43,8 +43,8 @@ func GetUsers(c *gin.Context) {
 	var resp []GetUserResponse
 	for _, u := range users {
 		resp = append(resp, GetUserResponse{
-			Username: u.Username,
-			Role:     u.Role,
+			Username:   u.Username,
+			Role:       u.Role,
 			CreateTime: u.CreateTime.UTC().Format("2006-01-02 15:04:05"),
 			UpdateTime: u.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
 		})

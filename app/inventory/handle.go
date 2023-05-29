@@ -36,8 +36,8 @@ func GetInventories(c *gin.Context) {
 			Quantity:    ivt.Quantity,
 			MaxQuantity: ivt.MaxQuantity,
 			MinQuantity: ivt.MinQuantity,
-			CreateTime: ivt.CreateTime.UTC().Format("2006-01-02 15:04:05"),
-			UpdateTime: ivt.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
+			CreateTime:  ivt.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			UpdateTime:  ivt.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -68,7 +68,7 @@ func GetInBounds(c *gin.Context) {
 			ProductName: inb.ProductName,
 			Quantity:    inb.Quantity,
 			UserName:    inb.UserName,
-			CreateTime: inb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			CreateTime:  inb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -99,7 +99,7 @@ func GetOutBounds(c *gin.Context) {
 			ProductName: outb.ProductName,
 			Quantity:    outb.Quantity,
 			UserName:    outb.UserName,
-			CreateTime: outb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			CreateTime:  outb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -125,7 +125,7 @@ func CreateInbound(c *gin.Context) {
 		ivt.MaxQuantity = request.Quantity * 2
 		ivt.ProductName = request.ProductName
 		ivt.MinQuantity = request.Quantity / 2
-		global.GL_DB.Create(&ivt)	
+		global.GL_DB.Create(&ivt)
 	}
 
 	if err := global.GL_DB.Model(&inventory.Inventory{}).Where("product_name = ?", request.ProductName).First(&ivt).Error; err != nil {

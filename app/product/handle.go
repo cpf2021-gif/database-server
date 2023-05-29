@@ -44,11 +44,11 @@ func CreateProduct(c *gin.Context) {
 }
 
 type GetProductsResponse struct {
-	ID           int   `json:"id"`
+	ID           int    `json:"id"`
 	Name         string `json:"name"`
 	SupplierName string `json:"supplier_name"`
-	CreateTime  string `json:"create_time"`
-	UpdateTime  string `json:"update_time"`
+	CreateTime   string `json:"create_time"`
+	UpdateTime   string `json:"update_time"`
 }
 
 // 获取所有商品
@@ -69,8 +69,8 @@ func GetProducts(c *gin.Context) {
 			ID:           p.ID,
 			Name:         p.Name,
 			SupplierName: p.SupplierName,
-			CreateTime:  p.CreateTime.UTC().Format("2006-01-02 15:04:05"),
-			UpdateTime:  p.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
+			CreateTime:   p.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			UpdateTime:   p.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
