@@ -15,7 +15,7 @@ func Backup(viper *viper.Viper) error {
 	nowtime := time.Now().In(loc).Format("2006-01-02")
 
 	global.GL_VIPER.Set("database.backuptime", nowtime)
-	global.GL_CONFIG.App.BackupTime = nowtime
+	global.GL_CONFIG.Database.BackupTime = nowtime
 
 	if err := global.GL_VIPER.WriteConfig(); err != nil {
 		return err
