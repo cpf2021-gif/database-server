@@ -11,6 +11,7 @@ type Database struct {
 	SSLMode        string `mapstructure:"sslmode" json:"sslmode" yaml:"sslmode"`
 	Max_idle_conns int    `mapstructure:"max_idle_conns" json:"max_idle_conns" yaml:"max_idle_conns"`
 	Max_open_conns int    `mapstructure:"max_open_conns" json:"max_open_conns" yaml:"max_open_conns"`
+	BackupTime     string `mapstructure:"backup_time" json:"backuptime" yaml:"backuptime"`
 }
 
 func (db *Database) GetDSN() string {
