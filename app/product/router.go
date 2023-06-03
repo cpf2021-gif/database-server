@@ -8,4 +8,5 @@ func Routers(e *gin.Engine) {
 	e.GET("/suppliers", GetSuppliers)
 	e.PATCH("/products/:id", UpdateProduct)
 	e.POST("/suppliers", CreateSupplier)
+	e.DELETE("/products/:id", DeleteProduct)
 }

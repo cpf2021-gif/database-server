@@ -4,12 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"server/global"
 	"server/model/inventory"
 )
 
 type GetInventoriesResponse struct {
+	ID          int    `json:"id" binding:"required"`
 	ProductName string `json:"product_name" binding:"required"`
 	Quantity    int    `json:"quantity" binding:"required"`
 	MaxQuantity int    `json:"max_quantity" binding:"required"`
@@ -32,6 +34,7 @@ func GetInventories(c *gin.Context) {
 	var response []GetInventoriesResponse
 	for _, ivt := range inventories {
 		response = append(response, GetInventoriesResponse{
+			ID:          ivt.ID,
 			ProductName: ivt.ProductName,
 			Quantity:    ivt.Quantity,
 			MaxQuantity: ivt.MaxQuantity,
@@ -45,6 +48,7 @@ func GetInventories(c *gin.Context) {
 }
 
 type GetInBoundsResponse struct {
+	ID          int    `json:"id" binding:"required"`
 	ProductName string `json:"product_name" binding:"required"`
 	Quantity    int    `json:"quantity" binding:"required"`
 	UserName    string `json:"user_name" binding:"required"`
@@ -65,6 +69,7 @@ func GetInBounds(c *gin.Context) {
 	var response []GetInBoundsResponse
 	for _, inb := range inBounds {
 		response = append(response, GetInBoundsResponse{
+			ID:          inb.ID,
 			ProductName: inb.ProductName,
 			Quantity:    inb.Quantity,
 			UserName:    inb.UserName,
@@ -76,6 +81,7 @@ func GetInBounds(c *gin.Context) {
 }
 
 type GetOutBoundsResponse struct {
+	ID          int    `json:"id" binding:"required"`
 	ProductName string `json:"product_name" binding:"required"`
 	Quantity    int    `json:"quantity" binding:"required"`
 	UserName    string `json:"user_name" binding:"required"`
@@ -96,6 +102,7 @@ func GetOutBounds(c *gin.Context) {
 	var response []GetOutBoundsResponse
 	for _, outb := range outBounds {
 		response = append(response, GetOutBoundsResponse{
+			ID:          outb.ID,
 			ProductName: outb.ProductName,
 			Quantity:    outb.Quantity,
 			UserName:    outb.UserName,
@@ -153,7 +160,7 @@ func CreateInbound(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create inbound"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": inbound})
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
 type CreateOutboundRequest struct {
@@ -193,9 +200,147 @@ func CreateOutbound(c *gin.Context) {
 	}
 
 	if err := global.GL_DB.Create(&outbound).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create outbound"})
+		c.JSON(http.StatusOK, gin.H{"error": "failed to create outbound"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": outbound})
+	if ivt.Quantity < ivt.MinQuantity {
+		c.JSON((http.StatusOK), gin.H{"message": "success, but inventory is less than min quantity"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+type UpdateInventoryRequest struct {
+	MAXQuantity int `json:"max_quantity" `
+	MINQuantity int `json:"min_quantity" `
+}
+
+func UpdateInventoryRequestByID(c *gin.Context) {
+	id := c.Param("id")
+	var request UpdateInventoryRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var ivt inventory.Inventory
+	if err := global.GL_DB.Model(&inventory.Inventory{}).Where("id = ?", id).First(&ivt).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inventory"})
+		return
+	}
+
+	if request.MAXQuantity != 0 {
+		ivt.MaxQuantity = request.MAXQuantity
+	}
+	if request.MINQuantity != 0 {
+		ivt.MinQuantity = request.MINQuantity
+	}
+
+	if ivt.MaxQuantity < ivt.MinQuantity {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "max quantity must be greater than min quantity"})
+		return
+	}
+
+	if err := global.GL_DB.Save(&ivt).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update inventory"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
+type exportInboundRequest struct {
+	ProductName string `json:"product_name"`
+	Month       string `json:"month"`
+}
+
+func ExportInbound(c *gin.Context) {
+	var request exportInboundRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var inbounds []inventory.Inbound
+	if request.ProductName == "" && request.Month == "" {
+		if err := global.GL_DB.Model(&inventory.Inbound{}).Find(&inbounds).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inbounds"})
+			return
+		}
+	} else {
+		var db *gorm.DB
+		db = global.GL_DB.Model(&inventory.Inbound{})
+		if request.ProductName != "" {
+			db = db.Where("product_name = ?", request.ProductName)
+		}
+		if request.Month != "" {
+			db = db.Where("to_char(create_time, 'YYYY-MM') = ?", request.Month)
+		}
+		if err := db.Find(&inbounds).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inbounds"})
+			return
+		}
+	}
+
+	var response []GetInBoundsResponse
+	for _, inb := range inbounds {
+		response = append(response, GetInBoundsResponse{
+			ID:          inb.ID,
+			ProductName: inb.ProductName,
+			Quantity:    inb.Quantity,
+			UserName:    inb.UserName,
+			CreateTime:  inb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": response})
+}
+
+type exportOutboundRequest struct {
+	ProductName string `json:"product_name"`
+	Month       string `json:"month"`
+}
+
+func ExportOutbound(c *gin.Context) {
+	var request exportOutboundRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var outbounds []inventory.Outbound
+	if request.ProductName == "" && request.Month == "" {
+		if err := global.GL_DB.Model(&inventory.Outbound{}).Find(&outbounds).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get outbounds"})
+			return
+		}
+	} else {
+		var db *gorm.DB
+		db = global.GL_DB.Model(&inventory.Outbound{})
+		if request.ProductName != "" {
+			db = db.Where("product_name = ?", request.ProductName)
+		}
+		if request.Month != "" {
+			db = db.Where("to_char(create_time, 'YYYY-MM') = ?", request.Month)
+		}
+		if err := db.Find(&outbounds).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get outbounds"})
+			return
+		}
+	}
+
+	var response []GetOutBoundsResponse
+	for _, outb := range outbounds {
+		response = append(response, GetOutBoundsResponse{
+			ID:          outb.ID,
+			ProductName: outb.ProductName,
+			Quantity:    outb.Quantity,
+			UserName:    outb.UserName,
+			CreateTime:  outb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": response})
 }

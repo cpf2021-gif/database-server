@@ -15,7 +15,8 @@ type CreateProductRequest struct {
 }
 
 type UpdateProductRequest struct {
-	SupplierName string `json:"supplier_name" binding:"required"`
+	Name         string `json:"name"`
+	SupplierName string `json:"supplier_name"`
 }
 
 // 创建商品
@@ -40,7 +41,7 @@ func CreateProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": p})
+	c.JSON(http.StatusOK, gin.H{"message": "create product success"})
 }
 
 type GetProductsResponse struct {
@@ -92,7 +93,7 @@ func GetSuppliers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": suppliers})
 }
 
-// 修改商品供应商
+// 修改商品
 func UpdateProduct(c *gin.Context) {
 	id := c.Param("id")
 
@@ -111,11 +112,13 @@ func UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	if p.SupplierName == request.SupplierName {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "supplier name is the same"})
+	if request.Name != "" {
+		p.Name = request.Name
 	}
 
-	p.SupplierName = request.SupplierName
+	if request.SupplierName != "" {
+		p.SupplierName = request.SupplierName
+	}
 
 	/*
 		UPDATE products SET supplier_name = ?, update_time = ? WHERE id = ?
@@ -125,7 +128,7 @@ func UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": p})
+	c.JSON(http.StatusOK, gin.H{"message": "update product success"})
 }
 
 type CreateSupplierRequest struct {
@@ -157,5 +160,17 @@ func CreateSupplier(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": s})
+	c.JSON(http.StatusOK, gin.H{"message": "create supplier success"})
+}
+
+// 删除商品
+func DeleteProduct(c *gin.Context) {
+	id := c.Param("id")
+
+	if err := global.GL_DB.Where("id = ?", id).Delete(&product.Product{}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete product"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "delete product success"})
 }

@@ -14,6 +14,8 @@ type CreateUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 	Role     string `json:"role" binding:"required"`
+	Sex      string `json:"sex" binding:"required"`
+	Phone    string `json:"phone" binding:"required"`
 }
 
 type LoginRequest struct {
@@ -24,12 +26,16 @@ type LoginRequest struct {
 type GetUserResponse struct {
 	Username   string `json:"username"`
 	Role       string `json:"role"`
+	Sex        string `json:"sex" binding:"required"`
+	Phone      string `json:"phone" binding:"required"`
 	CreateTime string `json:"create_time"`
 	UpdateTime string `json:"update_time"`
 }
 
 type UpdateRoleRequest struct {
-	Role string `json:"role" binding:"required"`
+	Role  string `json:"role"`
+	Sex   string `json:"sex"`
+	Phone string `json:"phone"`
 }
 
 func GetUsers(c *gin.Context) {
@@ -45,9 +51,32 @@ func GetUsers(c *gin.Context) {
 		resp = append(resp, GetUserResponse{
 			Username:   u.Username,
 			Role:       u.Role,
+			Sex:        u.Sex,
+			Phone:      u.Phone,
 			CreateTime: u.CreateTime.UTC().Format("2006-01-02 15:04:05"),
 			UpdateTime: u.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": resp})
+}
+
+func GetUserByName(c *gin.Context) {
+	name := c.Param("name")
+
+	var u user.User
+	if err := global.GL_DB.Model(&user.User{}).Where("username = ?", name).First(&u).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user"})
+		return
+	}
+
+	resp := GetUserResponse{
+		Username:   u.Username,
+		Role:       u.Role,
+		Sex:        u.Sex,
+		Phone:      u.Phone,
+		CreateTime: u.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+		UpdateTime: u.UpdateTime.UTC().Format("2006-01-02 15:04:05"),
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": resp})
@@ -71,6 +100,8 @@ func CreateUser(c *gin.Context) {
 		Username: request.Username,
 		Password: hashedPassword,
 		Role:     request.Role,
+		Sex:      request.Sex,
+		Phone:    request.Phone,
 	}
 
 	if global.GL_DB.Model(&user.User{}).Create(&u).Error != nil {
@@ -79,6 +110,28 @@ func CreateUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "user created"})
+}
+
+func DeleteUserByName(c *gin.Context) {
+	name := c.Param("name")
+
+	var u user.User
+	if err := global.GL_DB.Model(&user.User{}).Where("username = ?", name).First(&u).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user"})
+		return
+	}
+
+	if u.Role == "admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot delete admin user"})
+		return
+	}
+
+	if global.GL_DB.Model(&user.User{}).Where("username = ?", name).Delete(&user.User{}).Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "user deleted"})
 }
 
 func Login(c *gin.Context) {
@@ -102,6 +155,12 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "login success", "role": u.Role})
 }
 
+func Logout(c *gin.Context) {
+	// 自动备份数据库
+	util.Backup(global.GL_VIPER)
+	c.JSON(http.StatusOK, gin.H{"message": "logout success"})
+}
+
 func UpdateRoleByName(c *gin.Context) {
 	name := c.Param("name")
 
@@ -117,12 +176,26 @@ func UpdateRoleByName(c *gin.Context) {
 		return
 	}
 
-	if u.Role == request.Role {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "role not changed"})
+	if u.Role == request.Role && u.Sex == request.Sex && u.Phone == request.Phone {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "not changed"})
 		return
 	}
 
-	u.Role = request.Role
+	// 不允许修改admin的role
+	if request.Role != "" && u.Username == "admin" && request.Role != "admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "not allowed to change admin's role"})
+		return
+	}
+
+	if request.Role != "" {
+		u.Role = request.Role
+	}
+	if request.Phone != "" {
+		u.Phone = request.Phone
+	}
+	if request.Sex != "" {
+		u.Sex = request.Sex
+	}
 
 	// 使用Save方法，才会调用gorm的hooks
 	if global.GL_DB.Save(&u).Error != nil {
