@@ -51,7 +51,7 @@ Create table suppliers
 */
 type Supplier struct {
 	Name     string `json:"name" gorm:"type:varchar(20);primary_key"`
-	Phone    string `json:"phone" gorm:"type:varchar(20);not null"`
+	Phone    string `json:"phone" gorm:"type:char(11);unique;check:,(phone ~ '^[0-9]{11}$');"`
 	Location string `json:"location" gorm:"type:varchar(20);not null"`
 }
 
