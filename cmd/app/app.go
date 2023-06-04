@@ -20,7 +20,7 @@ func main() {
 
 	// 定期备份数据库
 	s := gocron.NewScheduler(time.Local)
-	s.Every(10).Minutes().Do(func(){
+	s.Every(10).Minutes().Do(func() {
 		util.Backup(global.GL_VIPER)
 	})
 
