@@ -1,6 +1,8 @@
 package test
 
 import (
+	"fmt"
+	"os/exec"
 	"testing"
 
 	"server/global"
@@ -9,5 +11,14 @@ import (
 
 func TestInitializeViper(t *testing.T) {
 	global.GL_VIPER = setup.InitializeViper(".././")
-	t.Logf("%#v\n", global.GL_CONFIG)
+}
+
+func TestCmd(t *testing.T) {
+	cmd := exec.Command("make", "-C", "../", "fmt")
+
+	out, err := cmd.Output()
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(string(out))
 }
