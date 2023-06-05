@@ -4,7 +4,7 @@ app:
     name: Inventory Management System
     port: 8080
 database:
-    backuptime: "2023-06-04"
+    backuptime: "2023-06-05"
     dbname: inventory_management_system
     host: localhost
     max_idle_conns: 10
