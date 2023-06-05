@@ -14,7 +14,7 @@ import (
 /*
 CREATE TABLE inventories
 (
-	id           bigint PRIMARY KEY AUTO_INCREMENT,
+	id           bigint PRIMARY KEY serial,
 	product_name varchar(20) NOT NULL,
 	quantity     bigint NOT NULL,
 	max_quantity bigint NOT NULL,
@@ -53,7 +53,7 @@ func (i *Inventory) BeforeUpdate(tx *gorm.DB) (err error) {
 /*
 CREATE TABLE inbound
 (
-	id          bigint PRIMARY KEY AUTO_INCREMENT,
+	id          bigint PRIMARY KEY serial,
 	product_name varchar(20) NOT NULL,
 	quantity    bigint NOT NULL,
 	user_name   varchar(20) NOT NULL,
@@ -87,7 +87,7 @@ func (i *Inbound) BeforeCreate(tx *gorm.DB) (err error) {
 /*
 CREATE TABLE outbound
 (
-	id          bigint PRIMARY KEY AUTO_INCREMENT,
+	id          bigint PRIMARY KEY serial,
 	product_name varchar(20) NOT NULL,
 	quantity    bigint NOT NULL,
 	user_name   varchar(20) NOT NULL,

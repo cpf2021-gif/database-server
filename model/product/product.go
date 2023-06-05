@@ -11,10 +11,11 @@ import (
 /*
 Create table products
 (
-	id bigint primary key auto_increment,
+	id bigint primary key serial,
 	name varchar(20) not null unique,
 	supplier_phone varchar(20) not null,
 	create_time timestamp with time zone not null,
+	update_time timestamp with time zone not null,
 	foreign key (supplier_name) references suppliers(name) on update cascade on delete restrict,
 );
 */
@@ -45,7 +46,7 @@ func (p *Product) BeforeUpdate(tx *gorm.DB) (err error) {
 Create table suppliers
 (
 	name varchar(20) primary key,
-	phone varchar(20) not null unique,
+	phone varchar(20) not null unique check (phone ~ '^[0-9]{11}$'),
 	locations varchar(20) not null
 )
 */

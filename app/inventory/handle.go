@@ -20,12 +20,12 @@ type GetInventoriesResponse struct {
 	UpdateTime  string `json:"update_time" binding:"required"`
 }
 
-/*
-SELECT * FROM inventories;
-*/
 func GetInventories(c *gin.Context) {
 	var inventories []inventory.Inventory
 
+	/*
+	   SELECT * FROM inventories;
+	*/
 	if err := global.GL_DB.Model(&inventory.Inventory{}).Find(&inventories).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inventories"})
 		return
@@ -55,12 +55,12 @@ type GetInBoundsResponse struct {
 	CreateTime  string `json:"create_time" binding:"required"`
 }
 
-/*
-SELECT * FROM inbounds;
-*/
 func GetInBounds(c *gin.Context) {
 	var inBounds []inventory.Inbound
 
+	/*
+		SELECT * FROM inbounds;
+	*/
 	if err := global.GL_DB.Model(&inventory.Inbound{}).Find(&inBounds).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inbounds"})
 		return
@@ -88,12 +88,12 @@ type GetOutBoundsResponse struct {
 	CreateTime  string `json:"create_time" binding:"required"`
 }
 
-/*
-SELECT * FROM outbounds;
-*/
 func GetOutBounds(c *gin.Context) {
 	var outBounds []inventory.Outbound
 
+	/*
+		SELECT * FROM outbounds;
+	*/
 	if err := global.GL_DB.Model(&inventory.Outbound{}).Find(&outBounds).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get outbounds"})
 		return
@@ -128,10 +128,19 @@ func CreateInbound(c *gin.Context) {
 
 	var ivt inventory.Inventory
 	// 不存在则创建
+	/*
+		SELECT * FROM inventories 
+		WHERE product_name = request.ProductName
+		LIMIT 1;
+	*/
 	if err := global.GL_DB.Model(&inventory.Inventory{}).Where("product_name = ?", request.ProductName).First(&ivt).Error; err != nil {
 		ivt.MaxQuantity = request.Quantity * 2
 		ivt.ProductName = request.ProductName
 		ivt.MinQuantity = request.Quantity / 2
+		/*
+			INSERT INTO inventories (product_name, quantity, max_quantity, min_quantity, create_time, update_time)
+			VALUES (request.ProductName, request.Quantity, request.Quantity * 2, request.Quantity / 2, now(), now()));
+		*/
 		global.GL_DB.Create(&ivt)
 	}
 
@@ -146,6 +155,11 @@ func CreateInbound(c *gin.Context) {
 		return
 	}
 
+	/*
+		UPDATE inventories
+		SET quantity = ivt.Quantity
+		WHERE id = ivt.ID;
+	*/
 	if err := global.GL_DB.Save(&ivt).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update inventory"})
 		return
@@ -156,6 +170,10 @@ func CreateInbound(c *gin.Context) {
 		Quantity:    request.Quantity,
 		UserName:    request.UserName,
 	}
+	/*
+		INSERT INTO inbounds (product_name, quantity, user_name, create_time)
+		VALUES (request.ProductName, request.Quantity, request.UserName, now());
+	*/
 	if err := global.GL_DB.Create(&inbound).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create inbound"})
 		return
@@ -177,6 +195,11 @@ func CreateOutbound(c *gin.Context) {
 	}
 
 	var ivt inventory.Inventory
+	/*
+		SELECT * FROM inventories
+		WHERE product_name = request.ProductName
+		LIMIT 1;
+	*/
 	if err := global.GL_DB.Model(&inventory.Inventory{}).Where("product_name = ?", request.ProductName).First(&ivt).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inventory"})
 		return
@@ -188,6 +211,11 @@ func CreateOutbound(c *gin.Context) {
 	}
 
 	ivt.Quantity -= request.Quantity
+	/*
+		UPDATE inventories
+		SET quantity = ivt.Quantity
+		WHERE id = ivt.ID;
+	*/
 	if err := global.GL_DB.Save(&ivt).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update inventory"})
 		return
@@ -199,6 +227,10 @@ func CreateOutbound(c *gin.Context) {
 		UserName:    request.UserName,
 	}
 
+	/*
+		INSERT INTO outbounds (product_name, quantity, user_name, create_time)
+		VALUES (request.ProductName, request.Quantity, request.UserName, now());
+	*/
 	if err := global.GL_DB.Create(&outbound).Error; err != nil {
 		c.JSON(http.StatusOK, gin.H{"error": "failed to create outbound"})
 		return
@@ -226,6 +258,11 @@ func UpdateInventoryRequestByID(c *gin.Context) {
 	}
 
 	var ivt inventory.Inventory
+	/*
+		SELECT * FROM inventories
+		WHERE id = id
+		LIMIT 1;
+	*/
 	if err := global.GL_DB.Model(&inventory.Inventory{}).Where("id = ?", id).First(&ivt).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inventory"})
 		return
@@ -243,6 +280,11 @@ func UpdateInventoryRequestByID(c *gin.Context) {
 		return
 	}
 
+	/*
+		UPDATE inventories
+		SET max_quantity = ivt.MaxQuantity, min_quantity = ivt.MinQuantity
+		WHERE id = ivt.ID;
+	*/
 	if err := global.GL_DB.Save(&ivt).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update inventory"})
 		return
@@ -265,6 +307,9 @@ func ExportInbound(c *gin.Context) {
 	}
 	var inbounds []inventory.Inbound
 	if request.ProductName == "" && request.Month == "" {
+		/*
+			SELECT * FROM inbounds;
+		*/
 		if err := global.GL_DB.Model(&inventory.Inbound{}).Find(&inbounds).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inbounds"})
 			return
@@ -272,9 +317,17 @@ func ExportInbound(c *gin.Context) {
 	} else {
 		var db *gorm.DB
 		db = global.GL_DB.Model(&inventory.Inbound{})
+		/*
+			SELECT * FROM inbounds
+			WHERE product_name = request.ProductName;
+		*/
 		if request.ProductName != "" {
 			db = db.Where("product_name = ?", request.ProductName)
 		}
+		/*
+			SELECT * FROM inbounds
+			WHERE to_char(create_time, 'YYYY-MM') = request.Month;
+		*/
 		if request.Month != "" {
 			db = db.Where("to_char(create_time, 'YYYY-MM') = ?", request.Month)
 		}
@@ -311,6 +364,9 @@ func ExportOutbound(c *gin.Context) {
 		return
 	}
 	var outbounds []inventory.Outbound
+	/*
+		SELECT * FROM outbounds;
+	*/
 	if request.ProductName == "" && request.Month == "" {
 		if err := global.GL_DB.Model(&inventory.Outbound{}).Find(&outbounds).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get outbounds"})
@@ -319,9 +375,17 @@ func ExportOutbound(c *gin.Context) {
 	} else {
 		var db *gorm.DB
 		db = global.GL_DB.Model(&inventory.Outbound{})
+		/*
+			SELECT * FROM outbounds
+			WHERE product_name = request.ProductName;
+		*/
 		if request.ProductName != "" {
 			db = db.Where("product_name = ?", request.ProductName)
 		}
+		/*
+			SELECT * FROM outbounds
+			WHERE to_char(create_time, 'YYYY-MM') = request.Month;
+		*/
 		if request.Month != "" {
 			db = db.Where("to_char(create_time, 'YYYY-MM') = ?", request.Month)
 		}

@@ -41,6 +41,9 @@ type UpdateRoleRequest struct {
 func GetUsers(c *gin.Context) {
 	var users []user.User
 
+	/*
+		SELECT * FROM users
+	*/
 	if err := global.GL_DB.Model(&user.User{}).Find(&users).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get users"})
 		return
@@ -65,6 +68,9 @@ func GetUserByName(c *gin.Context) {
 	name := c.Param("name")
 
 	var u user.User
+	/*
+		SELECT * FROM users WHERE username = name
+	*/
 	if err := global.GL_DB.Model(&user.User{}).Where("username = ?", name).First(&u).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user"})
 		return
@@ -104,6 +110,11 @@ func CreateUser(c *gin.Context) {
 		Phone:    request.Phone,
 	}
 
+
+	/* 
+		INSERT INTO users (username, password, role, sex, phone, createtime, updatetime)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+	*/
 	if global.GL_DB.Model(&user.User{}).Create(&u).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
 		return
@@ -116,6 +127,10 @@ func DeleteUserByName(c *gin.Context) {
 	name := c.Param("name")
 
 	var u user.User
+	/*
+		SELECT * FROM users WHERE username = name
+		LIMIT 1
+	*/
 	if err := global.GL_DB.Model(&user.User{}).Where("username = ?", name).First(&u).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get user"})
 		return
@@ -126,6 +141,9 @@ func DeleteUserByName(c *gin.Context) {
 		return
 	}
 
+	/*
+		DELETE FROM users WHERE username = name
+	*/
 	if global.GL_DB.Model(&user.User{}).Where("username = ?", name).Delete(&user.User{}).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete user"})
 		return
@@ -142,6 +160,10 @@ func Login(c *gin.Context) {
 	}
 
 	var u user.User
+	/*
+		SELECT * FROM users WHERE username = request.Username
+		LIMIT 1
+	*/
 	if err := global.GL_DB.Model(&user.User{}).Where("username = ?", request.Username).First(&u).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid username or password"})
 		return
@@ -165,6 +187,10 @@ func UpdateRoleByName(c *gin.Context) {
 	name := c.Param("name")
 
 	var u user.User
+	/*
+		SELECT * FROM users WHERE username = name
+		LIMIT 1
+	*/
 	if err := global.GL_DB.Model(&user.User{}).Where("username = ?", name).First(&u).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
@@ -198,6 +224,10 @@ func UpdateRoleByName(c *gin.Context) {
 	}
 
 	// 使用Save方法，才会调用gorm的hooks
+	/*
+		Update users set role = ?, phone = ?, sex = ? 
+		where username = ?
+	*/
 	if global.GL_DB.Save(&u).Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
 		return

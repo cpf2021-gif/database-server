@@ -167,6 +167,9 @@ func CreateSupplier(c *gin.Context) {
 func DeleteProduct(c *gin.Context) {
 	id := c.Param("id")
 
+	/*
+		DELETE FROM products WHERE id = ?
+	*/
 	if err := global.GL_DB.Where("id = ?", id).Delete(&product.Product{}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete product"})
 		return
