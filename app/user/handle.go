@@ -235,3 +235,56 @@ func UpdateRoleByName(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "user updated"})
 }
+
+type UpdatePasswordRequest struct {
+	Password string `json:"password" binding:"required"`
+}
+
+func UpdatePasswordByName(c *gin.Context) {
+	name := c.Param("name")
+
+	var u user.User
+	/*
+		SELECT * FROM users WHERE username = name
+		LIMIT 1
+	*/
+	if err := global.GL_DB.Model(&user.User{}).Where("username = ?", name).First(&u).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user not found"})
+		return
+	}
+
+	var request UpdatePasswordRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if util.CheckPasswordHash(request.Password, u.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "not changed"})
+		return
+	}
+
+	hashedPassword, err := util.HashAndSalt(request.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
+		return
+	}
+
+	if u.Password == hashedPassword {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "not changed"})
+		return
+	}
+
+	u.Password = hashedPassword
+
+	/*
+		Update users set password = ?
+		where username = ?
+	*/
+	if global.GL_DB.Save(&u).Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "user updated"})
+}
