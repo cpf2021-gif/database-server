@@ -16,8 +16,8 @@ Create table user
 	username varchar(20) primary key,
 	password char(60) not null,
 	sex char(1) not null check (sex in ('女', '男')),
-	phone varchar(11) not null check (phone ~ '^[0-9]{11}$') unique,
-	role varchar(10) not null,
+	phone char(11) not null check (phone ~ '^[0-9]{11}$') unique,
+	role varchar(10) not null check (role in ('admin', 'editor', 'analyst', 'guest')),
 	create_time timestamp with time zone not null,
 	update_time timestamp with time zone not null
 );

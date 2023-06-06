@@ -14,16 +14,17 @@ import (
 /*
 CREATE TABLE inventories
 (
-	id           bigint PRIMARY KEY serial,
+	id           BIGSERIAL PRIMARY KEY,
 	product_name varchar(20) NOT NULL,
 	quantity     bigint NOT NULL,
 	max_quantity bigint NOT NULL,
 	min_quantity bigint NOT NULL,
 	create_time  timestamp with time zone not null,
 	update_time  timestamp with time zone not null,
-	FOREIGN KEY (product_name) REFERENCES product(name) ON UPDATE CASCADE ON DELETE RESTRICT
+	FOREIGN KEY (product_name) REFERENCES products(name) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 */
+
 type Inventory struct {
 	ID          int             `json:"id" gorm:"primary_key"`
 	ProductName string          `json:"product_name" gorm:"type:varchar(20);not null"`
@@ -53,16 +54,16 @@ func (i *Inventory) BeforeUpdate(tx *gorm.DB) (err error) {
 /*
 CREATE TABLE inbound
 (
-	id          bigint PRIMARY KEY serial,
+	id          BIGSERIAL PRIMARY KEY,
 	product_name varchar(20) NOT NULL,
 	quantity    bigint NOT NULL,
 	user_name   varchar(20) NOT NULL,
 	create_time timestamp with time zone not null,
-	INDEX idx_inbound_create_time (create_time),
-	FOREIGN KEY (product_name) REFERENCES product(name) ON UPDATE CASCADE ON DELETE RESTRICT,
-	FOREIGN KEY (user_name) REFERENCES user(username) ON UPDATE CASCADE ON DELETE RESTRICT
+	FOREIGN KEY (product_name) REFERENCES products(name) ON UPDATE CASCADE ON DELETE RESTRICT,
+	FOREIGN KEY (user_name) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 */
+
 type Inbound struct {
 	ID int `json:"id" gorm:"primary_key"`
 
@@ -87,16 +88,16 @@ func (i *Inbound) BeforeCreate(tx *gorm.DB) (err error) {
 /*
 CREATE TABLE outbound
 (
-	id          bigint PRIMARY KEY serial,
+	id          BIGSERIAL PRIMARY KEY,
 	product_name varchar(20) NOT NULL,
 	quantity    bigint NOT NULL,
 	user_name   varchar(20) NOT NULL,
 	create_time timestamp with time zone not null,
-	INDEX idx_outbound_create_time (create_time),
-	FOREIGN KEY (product_name) REFERENCES product(name) ON UPDATE CASCADE ON DELETE RESTRICT,
-	FOREIGN KEY (user_name) REFERENCES user(username) ON UPDATE CASCADE ON DELETE RESTRICT
+	FOREIGN KEY (product_name) REFERENCES products(name) ON UPDATE CASCADE ON DELETE RESTRICT,
+	FOREIGN KEY (user_name) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 */
+
 type Outbound struct {
 	ID int `json:"id" gorm:"primary_key"`
 
@@ -123,6 +124,7 @@ func InitializeInventory(db *gorm.DB) {
 		INSERT INTO inventory (product_name, quantity, max_quantity, min_quantity, create_time, update_time)
 		VALUES ('iPhone 13', 100, 200, 50, '2021-10-01 00:00:00', '2021-10-01 00:00:00'),
 	*/
+
 	inventorys := []Inventory{
 		{ProductName: "iPhone 13", Quantity: 100, MaxQuantity: 200, MinQuantity: 50},
 		{ProductName: "MacBook Pro", Quantity: 70, MaxQuantity: 140, MinQuantity: 35},

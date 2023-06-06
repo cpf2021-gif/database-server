@@ -11,7 +11,7 @@ import (
 /*
 Create table products
 (
-	id bigint primary key serial,
+	id BIGSERIAL primary key,
 	name varchar(20) not null unique,
 	supplier_phone varchar(20) not null,
 	create_time timestamp with time zone not null,
@@ -47,7 +47,7 @@ Create table suppliers
 (
 	name varchar(20) primary key,
 	phone varchar(20) not null unique check (phone ~ '^[0-9]{11}$'),
-	locations varchar(20) not null
+	location varchar(20) not null
 )
 */
 type Supplier struct {
