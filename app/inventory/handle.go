@@ -178,6 +178,13 @@ func CreateInbound(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create inbound"})
 		return
 	}
+
+	// 如果太靠近最高值，发送消息提示
+	if ivt.Quantity >= ivt.MaxQuantity- ivt.MaxQuantity/10 {
+		c.JSON(http.StatusOK, gin.H{"message": "inventory is close to max quantity"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
