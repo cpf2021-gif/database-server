@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"server/global"
+	"server/model/inventory"
 	"server/model/product"
 )
 
@@ -36,6 +37,21 @@ func CreateProduct(c *gin.Context) {
 		INSERT INTO products (name, supplier_name, create_time, update_time)
 		VALUES ('name', 'supplier_name', 'create_time', 'update_time')
 	*/
+
+	// 查看库存中是否已经存在该商品，不存在则创建
+	var ivt inventory.Inventory
+	if err := global.GL_DB.Model(&inventory.Inventory{}).Where("product_name = ?", p.Name).First(&ivt).Error; err != nil {
+		if err := global.GL_DB.Model(&inventory.Inventory{}).Create(&inventory.Inventory{
+			ProductName: p.Name,
+			Quantity:    0,
+			MinQuantity: 10,
+			MaxQuantity: 100,
+		}).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
 	if err := global.GL_DB.Model(&product.Product{}).Create(&p).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -129,7 +129,7 @@ func CreateInbound(c *gin.Context) {
 	var ivt inventory.Inventory
 	// 不存在则创建
 	/*
-		SELECT * FROM inventories 
+		SELECT * FROM inventories
 		WHERE product_name = request.ProductName
 		LIMIT 1;
 	*/
