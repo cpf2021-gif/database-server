@@ -110,8 +110,7 @@ func CreateUser(c *gin.Context) {
 		Phone:    request.Phone,
 	}
 
-
-	/* 
+	/*
 		INSERT INTO users (username, password, role, sex, phone, createtime, updatetime)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	*/
@@ -225,7 +224,7 @@ func UpdateRoleByName(c *gin.Context) {
 
 	// 使用Save方法，才会调用gorm的hooks
 	/*
-		Update users set role = ?, phone = ?, sex = ? 
+		Update users set role = ?, phone = ?, sex = ?
 		where username = ?
 	*/
 	if global.GL_DB.Save(&u).Error != nil {
