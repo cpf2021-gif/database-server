@@ -56,12 +56,16 @@ CREATE TABLE inbound
 (
 	id          BIGSERIAL PRIMARY KEY,
 	product_name varchar(20) NOT NULL,
+	supplier_name varchar(20) NOT NULL,
 	quantity    bigint NOT NULL,
 	user_name   varchar(20) NOT NULL,
 	create_time timestamp with time zone not null,
 	FOREIGN KEY (product_name) REFERENCES products(name) ON UPDATE CASCADE ON DELETE RESTRICT,
 	FOREIGN KEY (user_name) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT
+	FROEIGN KEY (supplier_name) REFERENCES suppliers(name) ON UPDATE CASCADE ON DELETE RESTRICT
 );
+
+CREATE INDEX idx_inbound_create_time ON inbound(create_time);
 */
 
 type Inbound struct {
@@ -69,6 +73,9 @@ type Inbound struct {
 
 	ProductName string          `json:"product_name" gorm:"type:varchar(20);not null"`
 	Product     product.Product `json:"product" gorm:"references:name;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+
+	SupplierName string           `json:"supplier_name" gorm:"type:varchar(20);not null"`
+	Supplier     product.Supplier `json:"supplier" gorm:"references:name;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 
 	Quantity int `json:"quantity" gorm:"type:int;not null"`
 
@@ -90,12 +97,16 @@ CREATE TABLE outbound
 (
 	id          BIGSERIAL PRIMARY KEY,
 	product_name varchar(20) NOT NULL,
+	seller_name varchar(20) NOT NULL,
 	quantity    bigint NOT NULL,
 	user_name   varchar(20) NOT NULL,
 	create_time timestamp with time zone not null,
 	FOREIGN KEY (product_name) REFERENCES products(name) ON UPDATE CASCADE ON DELETE RESTRICT,
 	FOREIGN KEY (user_name) REFERENCES users(username) ON UPDATE CASCADE ON DELETE RESTRICT
+	FROEIGN KEY (seller_name) REFERENCES sellers(name) ON UPDATE CASCADE ON DELETE RESTRICT
 );
+
+CREATE INDEX idx_outbound_create_time ON outbound(create_time);
 */
 
 type Outbound struct {
@@ -103,6 +114,9 @@ type Outbound struct {
 
 	ProductName string          `json:"product_name" gorm:"type:varchar(20);not null"`
 	Product     product.Product `json:"product" gorm:"references:name;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+
+	SellerName string         `json:"seller_name" gorm:"type:varchar(20);not null"`
+	Seller     product.Seller `json:"seller" gorm:"references:name;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 
 	Quantity int `json:"quantity" gorm:"type:int;not null"`
 
@@ -146,17 +160,29 @@ func InitializeInventory(db *gorm.DB) {
 
 	global.GL_DB.Model(&Inventory{}).Create(&inventorys)
 
-	for _, inventory := range inventorys {
-		// 第一次入库
-		/*
-			INSERT INTO inbound (product_name, quantity, user_name, create_time)
-			VALUES ('iPhone 13', 100, 'admin', '2021-10-01 00:00:00'),
-		*/
-		inbound := Inbound{
-			ProductName: inventory.ProductName,
-			Quantity:    inventory.Quantity,
-			UserName:    "admin",
-		}
-		global.GL_DB.Model(&Inbound{}).Create(&inbound)
+	// 第一次入库
+	/*
+		INSERT INTO inbound (product_name, quantity, user_name, create_time)
+		VALUES ('iPhone 13', 100, 'admin', '2021-10-01 00:00:00'),
+	*/
+	inbounds := []Inbound{
+		{ProductName: "iPhone 13", Quantity: 100, UserName: "admin", SupplierName: "Apple"},
+		{ProductName: "MacBook Pro", Quantity: 70, UserName: "admin", SupplierName: "Apple"},
+		{ProductName: "Mate 50", Quantity: 50, UserName: "admin", SupplierName: "Huawei"},
+		{ProductName: "HuaWei Watch 3", Quantity: 60, UserName: "admin", SupplierName: "Huawei"},
+		{ProductName: "HuaWei MatePad Pro", Quantity: 80, UserName: "admin", SupplierName: "Huawei"},
+		{ProductName: "Galaxy S22", Quantity: 40, UserName: "admin", SupplierName: "Samsung"},
+		{ProductName: "Surface Pro 8", Quantity: 30, UserName: "admin", SupplierName: "Microsoft"},
+		{ProductName: "Pixel 6", Quantity: 15, UserName: "admin", SupplierName: "Google"},
+		{ProductName: "PlayStation 5", Quantity: 90, UserName: "admin", SupplierName: "Sony"},
+		{ProductName: "Kindle", Quantity: 78, UserName: "admin", SupplierName: "Amazon"},
+		{ProductName: "Switch", Quantity: 66, UserName: "admin", SupplierName: "nintendo"},
+		{ProductName: "Xiaomi 12", Quantity: 88, UserName: "admin", SupplierName: "Xiaomi"},
+		{ProductName: "Xiaomi Pad 5", Quantity: 99, UserName: "admin", SupplierName: "Xiaomi"},
+		{ProductName: "Xiaomi Watch", Quantity: 100, UserName: "admin", SupplierName: "Xiaomi"},
+		{ProductName: "OPPO Find X5", Quantity: 30, UserName: "admin", SupplierName: "OPPO"},
+		{ProductName: "OPPO Watch 2", Quantity: 68, UserName: "admin", SupplierName: "OPPO"},
 	}
+
+	global.GL_DB.Model(&Inbound{}).Create(&inbounds)
 }
