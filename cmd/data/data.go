@@ -17,7 +17,7 @@ func main() {
 	global.GL_DB = setup.InitializeDB()
 
 	// 创建表
-	global.GL_DB.AutoMigrate(&user.User{}, &product.Product{}, &product.Supplier{}, &inventory.Inventory{}, &inventory.Inbound{}, &inventory.Outbound{})
+	global.GL_DB.AutoMigrate(&user.User{}, &product.Product{}, &product.Supplier{}, &inventory.Inventory{}, &inventory.Inbound{}, &inventory.Outbound{}, &product.Seller{})
 
 	// 录入数据
 	// 用户
