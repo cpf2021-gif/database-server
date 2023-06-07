@@ -102,6 +102,11 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	if request.Role == "admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot create admin user"})
+		return
+	}
+
 	u := user.User{
 		Username: request.Username,
 		Password: hashedPassword,
@@ -182,7 +187,7 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "logout success"})
 }
 
-func UpdateRoleByName(c *gin.Context) {
+func UpdateUserByName(c *gin.Context) {
 	name := c.Param("name")
 
 	var u user.User
@@ -206,8 +211,14 @@ func UpdateRoleByName(c *gin.Context) {
 		return
 	}
 
+	// 不能修改为admin
+	if request.Role == "admin" && u.Role != "admin" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "not allowed to change to admin"})
+		return
+	}
+
 	// 不允许修改admin的role
-	if request.Role != "" && u.Username == "admin" && request.Role != "admin" {
+	if request.Role != "" && u.Role == "admin" && request.Role != "admin" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "not allowed to change admin's role"})
 		return
 	}

@@ -3,10 +3,15 @@ package product
 import "github.com/gin-gonic/gin"
 
 func Routers(e *gin.Engine) {
-	e.POST("/products", CreateProduct)
 	e.GET("/products", GetProducts)
 	e.GET("/suppliers", GetSuppliers)
-	e.PATCH("/products/:id", UpdateProduct)
+	e.GET("/sellers", GetSellers)
+
+	e.POST("/products", CreateProduct)
 	e.POST("/suppliers", CreateSupplier)
-	e.DELETE("/products/:id", DeleteProduct)
+	e.POST("/sellers", CreateSeller)
+
+	e.PATCH("/products/:id", UpdateProduct)
+	e.PATCH("/suppliers/:name", UpdateSupplier)
+	e.PATCH("/sellers/:name", UpdateSeller)
 }

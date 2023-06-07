@@ -48,11 +48,12 @@ func GetInventories(c *gin.Context) {
 }
 
 type GetInBoundsResponse struct {
-	ID          int    `json:"id" binding:"required"`
-	ProductName string `json:"product_name" binding:"required"`
-	Quantity    int    `json:"quantity" binding:"required"`
-	UserName    string `json:"user_name" binding:"required"`
-	CreateTime  string `json:"create_time" binding:"required"`
+	ID           int    `json:"id" binding:"required"`
+	ProductName  string `json:"product_name" binding:"required"`
+	SupplierName string `json:"supplier_name" binding:"required"`
+	Quantity     int    `json:"quantity" binding:"required"`
+	UserName     string `json:"user_name" binding:"required"`
+	CreateTime   string `json:"create_time" binding:"required"`
 }
 
 func GetInBounds(c *gin.Context) {
@@ -69,11 +70,12 @@ func GetInBounds(c *gin.Context) {
 	var response []GetInBoundsResponse
 	for _, inb := range inBounds {
 		response = append(response, GetInBoundsResponse{
-			ID:          inb.ID,
-			ProductName: inb.ProductName,
-			Quantity:    inb.Quantity,
-			UserName:    inb.UserName,
-			CreateTime:  inb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			ID:           inb.ID,
+			ProductName:  inb.ProductName,
+			SupplierName: inb.SupplierName,
+			Quantity:     inb.Quantity,
+			UserName:     inb.UserName,
+			CreateTime:   inb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -83,6 +85,7 @@ func GetInBounds(c *gin.Context) {
 type GetOutBoundsResponse struct {
 	ID          int    `json:"id" binding:"required"`
 	ProductName string `json:"product_name" binding:"required"`
+	SellerName  string `json:"seller_name" binding:"required"`
 	Quantity    int    `json:"quantity" binding:"required"`
 	UserName    string `json:"user_name" binding:"required"`
 	CreateTime  string `json:"create_time" binding:"required"`
@@ -104,6 +107,7 @@ func GetOutBounds(c *gin.Context) {
 		response = append(response, GetOutBoundsResponse{
 			ID:          outb.ID,
 			ProductName: outb.ProductName,
+			SellerName:  outb.SellerName,
 			Quantity:    outb.Quantity,
 			UserName:    outb.UserName,
 			CreateTime:  outb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
@@ -114,9 +118,10 @@ func GetOutBounds(c *gin.Context) {
 }
 
 type CreateInventoryRequest struct {
-	ProductName string `json:"product_name" binding:"required"`
-	Quantity    int    `json:"quantity" binding:"required"`
-	UserName    string `json:"user_name" binding:"required"`
+	ProductName  string `json:"product_name" binding:"required"`
+	SupplierName string `json:"supplier_name" binding:"required"`
+	Quantity     int    `json:"quantity" binding:"required"`
+	UserName     string `json:"user_name" binding:"required"`
 }
 
 func CreateInbound(c *gin.Context) {
@@ -127,23 +132,6 @@ func CreateInbound(c *gin.Context) {
 	}
 
 	var ivt inventory.Inventory
-	// 不存在则创建
-	/*
-		SELECT * FROM inventories
-		WHERE product_name = request.ProductName
-		LIMIT 1;
-	*/
-	if err := global.GL_DB.Model(&inventory.Inventory{}).Where("product_name = ?", request.ProductName).First(&ivt).Error; err != nil {
-		ivt.MaxQuantity = request.Quantity * 2
-		ivt.ProductName = request.ProductName
-		ivt.MinQuantity = request.Quantity / 2
-		/*
-			INSERT INTO inventories (product_name, quantity, max_quantity, min_quantity, create_time, update_time)
-			VALUES (request.ProductName, request.Quantity, request.Quantity * 2, request.Quantity / 2, now(), now()));
-		*/
-		global.GL_DB.Create(&ivt)
-	}
-
 	if err := global.GL_DB.Model(&inventory.Inventory{}).Where("product_name = ?", request.ProductName).First(&ivt).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get inventory"})
 		return
@@ -166,9 +154,10 @@ func CreateInbound(c *gin.Context) {
 	}
 
 	inbound := inventory.Inbound{
-		ProductName: request.ProductName,
-		Quantity:    request.Quantity,
-		UserName:    request.UserName,
+		ProductName:  request.ProductName,
+		SupplierName: request.SupplierName,
+		Quantity:     request.Quantity,
+		UserName:     request.UserName,
 	}
 	/*
 		INSERT INTO inbounds (product_name, quantity, user_name, create_time)
@@ -180,7 +169,7 @@ func CreateInbound(c *gin.Context) {
 	}
 
 	// 如果太靠近最高值，发送消息提示
-	if ivt.Quantity >= ivt.MaxQuantity- ivt.MaxQuantity/10 {
+	if ivt.Quantity >= ivt.MaxQuantity-ivt.MaxQuantity/10 {
 		c.JSON(http.StatusOK, gin.H{"message": "inventory is close to max quantity"})
 		return
 	}
@@ -190,6 +179,7 @@ func CreateInbound(c *gin.Context) {
 
 type CreateOutboundRequest struct {
 	ProductName string `json:"product_name" binding:"required"`
+	SellerName  string `json:"seller_name" binding:"required"`
 	Quantity    int    `json:"quantity" binding:"required"`
 	UserName    string `json:"user_name" binding:"required"`
 }
@@ -230,6 +220,7 @@ func CreateOutbound(c *gin.Context) {
 
 	outbound := inventory.Outbound{
 		ProductName: request.ProductName,
+		SellerName:  request.SellerName,
 		Quantity:    request.Quantity,
 		UserName:    request.UserName,
 	}
@@ -347,11 +338,12 @@ func ExportInbound(c *gin.Context) {
 	var response []GetInBoundsResponse
 	for _, inb := range inbounds {
 		response = append(response, GetInBoundsResponse{
-			ID:          inb.ID,
-			ProductName: inb.ProductName,
-			Quantity:    inb.Quantity,
-			UserName:    inb.UserName,
-			CreateTime:  inb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
+			ID:           inb.ID,
+			ProductName:  inb.ProductName,
+			SupplierName: inb.SupplierName,
+			Quantity:     inb.Quantity,
+			UserName:     inb.UserName,
+			CreateTime:   inb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
 		})
 	}
 
@@ -407,6 +399,7 @@ func ExportOutbound(c *gin.Context) {
 		response = append(response, GetOutBoundsResponse{
 			ID:          outb.ID,
 			ProductName: outb.ProductName,
+			SellerName:  outb.SellerName,
 			Quantity:    outb.Quantity,
 			UserName:    outb.UserName,
 			CreateTime:  outb.CreateTime.UTC().Format("2006-01-02 15:04:05"),
