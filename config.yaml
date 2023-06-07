@@ -1,10 +1,10 @@
 app:
-    createdtime: "2023-05-31"
+    createdtime: "2023-06-06"
     dbtype: postgresql
     name: Inventory Management System
     port: 8080
 database:
-    backuptime: "2023-06-06"
+    backuptime: "2023-06-07"
     dbname: inventory_management_system
     host: localhost
     max_idle_conns: 10
